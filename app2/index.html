@@ -130,10 +130,15 @@
 
                 // Display bot response
                 const botMessage = document.createElement("div");
-                botMessage.className = "message bot";
-                botMessage.textContent = data.choices[0].message.content || "Error: No response";
+
+                if (data.choices[0].message.content.includes("```")) {
+                    const codeBlock = document.createElement("pre");
+                    codeBlock.innerHTML = `<code>${data.choices[0].message.content.replace(/```/g, "").trim()}</code>`;
+                    botMessage.appendChild(codeBlock);
+                } else {
+                    botMessage.textContent = data.choices[0].message.content || "Error: No response";
+                }
                 chatBox.appendChild(botMessage);
-                
                 chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll to latest message
             } catch (error) {
                 console.error("Error fetching response:", error);
