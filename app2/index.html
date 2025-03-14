@@ -108,7 +108,7 @@
 
     <script>
         const API_ENDPOINT = "https://agent-b2ec4ee9b8083607363a-6vmxn.ondigitalocean.app/api/v1/chat/completions";
-        const ACCESS_KEY = "HGEe750fPIVqiLNMjDN0frELWEYDvjFx"; // Replace with your actual key
+        const ACCESS_KEY = ${{ secrets.GenAIsect }}; // Replace with your actual key
 
         async function sendMessage() {
             const userInput = document.getElementById("user-input").value;
