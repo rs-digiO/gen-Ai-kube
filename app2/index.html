@@ -54,52 +54,22 @@
             margin-left: 5px;
             cursor: pointer;
         }
-        .message {
-            margin: 5px 0;
-            padding: 8px;
-            border-radius: 5px;
-        }
-        .user-message {
-            background: #0061EB;
-            align-self: flex-end;
-        }
-        .bot-message {
-            background: #333;
-            align-self: flex-start;
-        }
     </style>
 </head>
 <body>
     <div class="chat-container">
-        <div class="chat-box" id="chatBox"></div>
-        <div class="input-box">
-            <input type="text" id="userInput" placeholder="Type a message...">
-            <button onclick="sendMessage()">Send</button>
-        </div>
+        <div id="chat-widget"></div>
     </div>
-    <script>
-        function sendMessage() {
-            const userInput = document.getElementById("userInput");
-            const chatBox = document.getElementById("chatBox");
-            if (userInput.value.trim() === "") return;
-            
-            // Append user message
-            const userMessage = document.createElement("div");
-            userMessage.className = "message user-message";
-            userMessage.textContent = userInput.value;
-            chatBox.appendChild(userMessage);
-            
-            // Simulate bot response
-            setTimeout(() => {
-                const botMessage = document.createElement("div");
-                botMessage.className = "message bot-message";
-                botMessage.textContent = "Hello! I'm ChatGPU. How can I help you?";
-                chatBox.appendChild(botMessage);
-                chatBox.scrollTop = chatBox.scrollHeight;
-            }, 1000);
-            
-            userInput.value = "";
-        }
+    <script async
+        src="https://agent-b2ec4ee9b8083607363a-6vmxn.ondigitalocean.app/static/chatbot/widget.js"
+        data-agent-id="69361d14-f4f3-11ef-bf8f-4e013e2ddde4"
+        data-chatbot-id="4GPQXtFCcCc-yEXSmRqBjYhLEXCnHi3A"
+        data-name="Supposed_k8s-Bot-that-will-do-everything Chatbot"
+        data-primary-color="#031B4E"
+        data-secondary-color="#E5E8ED"
+        data-button-background-color="#0061EB"
+        data-starting-message="Hello! How can I help you today?"
+        data-logo="/static/chatbot/icons/default-agent.svg">
     </script>
 </body>
 </html>
