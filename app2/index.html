@@ -18,27 +18,41 @@
             justify-content: center;
         }
         .chat-container {
-            width: 90%;
-            max-width: 800px;
-            height: 80vh;
+            width: 100%;
+            height: 100vh;
             background: rgba(0, 0, 0, 0.8);
-            padding: 20px;
-            border-radius: 10px;
             display: flex;
             flex-direction: column;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+            justify-content: space-between;
+            overflow: hidden;
         }
         .chat-box {
             flex-grow: 1;
             overflow-y: auto;
-            padding: 15px;
-            border-bottom: 1px solid #E5E8ED;
+            padding: 20px;
             display: flex;
             flex-direction: column;
         }
+        .message {
+            max-width: 70%;
+            margin: 10px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .user-message {
+            align-self: flex-end;
+            background-color: #0061EB;
+        }
+        .bot-message {
+            align-self: flex-start;
+            background-color: #333;
+        }
         .input-box {
             display: flex;
-            padding-top: 10px;
+            padding: 10px;
+            background: #222;
+            border-top: 1px solid #444;
         }
         input {
             flex-grow: 1;
@@ -47,6 +61,8 @@
             border-radius: 5px;
             font-size: 16px;
             outline: none;
+            background: #333;
+            color: white;
         }
         button {
             background-color: #0061EB;
@@ -58,27 +74,48 @@
             cursor: pointer;
             font-size: 16px;
         }
-        #chat-widget {
-            width: 100%;
-            height: 100%;
-        }
     </style>
 </head>
 <body>
     <div class="chat-container">
-        <div id="chat-widget"></div>
+        <div class="chat-box" id="chatBox"></div>
+        <div class="input-box">
+            <input type="text" id="userInput" placeholder="Type a message..." autocomplete="off">
+            <button onclick="sendMessage()">Send</button>
+        </div>
     </div>
 
-    <script async
-        src="https://agent-b2ec4ee9b8083607363a-6vmxn.ondigitalocean.app/static/chatbot/widget.js"
-        data-agent-id="69361d14-f4f3-11ef-bf8f-4e013e2ddde4"
-        data-chatbot-id="4GPQXtFCcCc-yEXSmRqBjYhLEXCnHi3A"
-        data-name="Supposed_k8s-Bot-that-will-do-everything Chatbot"
-        data-primary-color="#031B4E"
-        data-secondary-color="#E5E8ED"
-        data-button-background-color="#0061EB"
-        data-starting-message="Hello! How can I help you today?"
-        data-logo="/static/chatbot/icons/default-agent.svg">
+    <script>
+        function sendMessage() {
+            const userInput = document.getElementById("userInput");
+            const chatBox = document.getElementById("chatBox");
+            if (userInput.value.trim() === "") return;
+
+            // Append user message
+            const userMessage = document.createElement("div");
+            userMessage.className = "message user-message";
+            userMessage.textContent = userInput.value;
+            chatBox.appendChild(userMessage);
+            
+            // Call the chatbot API
+            fetch("https://agent-b2ec4ee9b8083607363a-6vmxn.ondigitalocean.app/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: userInput.value })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const botMessage = document.createElement("div");
+                botMessage.className = "message bot-message";
+                botMessage.textContent = data.response;
+                chatBox.appendChild(botMessage);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            })
+            .catch(error => console.error("Error:", error));
+
+            userInput.value = "";
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
     </script>
 </body>
 </html>
