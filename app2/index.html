@@ -27,21 +27,24 @@
             text-align: left;
             overflow-y: auto;
             height: 80vh;
+            display: flex;
+            flex-direction: column;
         }
         h1 {
             font-size: 2rem;
             text-align: center;
         }
         .chat-box {
+            flex-grow: 1;
             display: flex;
             flex-direction: column;
             gap: 10px;
-            max-height: 60vh;
             overflow-y: auto;
+            max-height: 60vh;
         }
         .message {
             padding: 10px;
-            border-radius: 5px;
+            border-radius: 10px;
             max-width: 80%;
             word-wrap: break-word;
         }
@@ -49,11 +52,13 @@
             background-color: #007bff;
             align-self: flex-end;
             text-align: right;
+            color: white;
         }
         .bot {
-            background-color: #333;
+            background-color: #1d3557;
             align-self: flex-start;
             text-align: left;
+            color: white;
         }
         .input-box {
             display: flex;
@@ -77,6 +82,16 @@
         }
         button:hover {
             background-color: #0056b3;
+        }
+        /* Code formatting */
+        .code-box {
+            background-color: #0d1b2a;
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: "Courier New", monospace;
+            overflow-x: auto;
+            white-space: pre-wrap;
         }
     </style>
 </head>
@@ -130,14 +145,20 @@
 
                 // Display bot response
                 const botMessage = document.createElement("div");
+                botMessage.className = "message bot";
 
-                if (data.choices[0].message.content.includes("```")) {
+                const botResponse = data.choices[0].message.content || "Error: No response";
+
+                // Check if response contains code
+                if (botResponse.includes("```")) {
                     const codeBlock = document.createElement("pre");
-                    codeBlock.innerHTML = `<code>${data.choices[0].message.content.replace(/```/g, "").trim()}</code>`;
+                    codeBlock.className = "code-box";
+                    codeBlock.innerHTML = `<code>${botResponse.replace(/```/g, "").trim()}</code>`;
                     botMessage.appendChild(codeBlock);
                 } else {
-                    botMessage.textContent = data.choices[0].message.content || "Error: No response";
+                    botMessage.textContent = botResponse;
                 }
+
                 chatBox.appendChild(botMessage);
                 chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll to latest message
             } catch (error) {
