@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChatGPU - AI Chatbot</title>
+    <title>Everything Kubernetes</title>
     <style>
         body {
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
-            background: #031B4E;
+            text-align: center;
+            background: url('https://source.unsplash.com/1600x900/?cloud,technology') no-repeat center center/cover;
             color: white;
             height: 100vh;
             display: flex;
@@ -17,105 +18,128 @@
             align-items: center;
             justify-content: center;
         }
-        .chat-container {
-            width: 100%;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            overflow: hidden;
+        .container {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            text-align: left;
+            overflow-y: auto;
+            height: 80vh;
+        }
+        h1 {
+            font-size: 2rem;
+            text-align: center;
         }
         .chat-box {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding: 20px;
             display: flex;
             flex-direction: column;
+            gap: 10px;
+            max-height: 60vh;
+            overflow-y: auto;
         }
         .message {
-            max-width: 70%;
-            margin: 10px;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 16px;
+            padding: 10px;
+            border-radius: 5px;
+            max-width: 80%;
+            word-wrap: break-word;
         }
-        .user-message {
+        .user {
+            background-color: #007bff;
             align-self: flex-end;
-            background-color: #0061EB;
+            text-align: right;
         }
-        .bot-message {
-            align-self: flex-start;
+        .bot {
             background-color: #333;
+            align-self: flex-start;
+            text-align: left;
         }
         .input-box {
             display: flex;
-            padding: 10px;
-            background: #222;
-            border-top: 1px solid #444;
+            margin-top: 10px;
         }
         input {
-            flex-grow: 1;
-            padding: 12px;
+            flex: 1;
+            padding: 10px;
             border: none;
             border-radius: 5px;
-            font-size: 16px;
             outline: none;
-            background: #333;
-            color: white;
         }
         button {
-            background-color: #0061EB;
-            color: white;
+            padding: 10px;
             border: none;
-            padding: 12px 20px;
             border-radius: 5px;
-            margin-left: 5px;
+            background-color: #007bff;
+            color: white;
             cursor: pointer;
-            font-size: 16px;
+            margin-left: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
-    <div class="chat-container">
-        <div class="chat-box" id="chatBox"></div>
+
+    <div class="container">
+        <h1>Everything Kubernetes</h1>
+        <div class="chat-box" id="chat-box"></div>
         <div class="input-box">
-            <input type="text" id="userInput" placeholder="Type a message..." autocomplete="off">
+            <input type="text" id="user-input" placeholder="Type a message...">
             <button onclick="sendMessage()">Send</button>
         </div>
     </div>
 
     <script>
-        function sendMessage() {
-            const userInput = document.getElementById("userInput");
-            const chatBox = document.getElementById("chatBox");
-            if (userInput.value.trim() === "") return;
+        const API_ENDPOINT = "https://agent-b2ec4ee9b8083607363a-6vmxn.ondigitalocean.app/api/v1/chat/completions";
+        const ACCESS_KEY = "HGEe750fPIVqiLNMjDN0frELWEYDvjFx"; // Replace with your actual key
 
-            // Append user message
-            const userMessage = document.createElement("div");
-            userMessage.className = "message user-message";
-            userMessage.textContent = userInput.value;
-            chatBox.appendChild(userMessage);
+        async function sendMessage() {
+            const userInput = document.getElementById("user-input").value;
+            if (!userInput.trim()) return;
             
-            // Call the chatbot API
-            fetch("https://agent-b2ec4ee9b8083607363a-6vmxn.ondigitalocean.app/api/chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: userInput.value })
-            })
-            .then(response => response.json())
-            .then(data => {
-                const botMessage = document.createElement("div");
-                botMessage.className = "message bot-message";
-                botMessage.textContent = data.response;
-                chatBox.appendChild(botMessage);
-                chatBox.scrollTop = chatBox.scrollHeight;
-            })
-            .catch(error => console.error("Error:", error));
+            const chatBox = document.getElementById("chat-box");
+            
+            // Display user message
+            const userMessage = document.createElement("div");
+            userMessage.className = "message user";
+            userMessage.textContent = userInput;
+            chatBox.appendChild(userMessage);
 
-            userInput.value = "";
-            chatBox.scrollTop = chatBox.scrollHeight;
+            document.getElementById("user-input").value = ""; // Clear input
+
+            // API Request
+            try {
+                const response = await fetch(API_ENDPOINT, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${ACCESS_KEY}`
+                    },
+                    body: JSON.stringify({
+                        messages: [{ role: "user", content: userInput }],
+                        stream: false,
+                        include_functions_info: false,
+                        include_retrieval_info: false,
+                        include_guardrails_info: false
+                    })
+                });
+
+                const data = await response.json();
+
+                // Display bot response
+                const botMessage = document.createElement("div");
+                botMessage.className = "message bot";
+                botMessage.textContent = data.choices[0].message.content || "Error: No response";
+                chatBox.appendChild(botMessage);
+                
+                chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll to latest message
+            } catch (error) {
+                console.error("Error fetching response:", error);
+            }
         }
     </script>
+
 </body>
 </html>
