@@ -3,644 +3,808 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevOps Script Assistant</title>
+    <title>ScriptAssist | SRE & DevOps Automation Assistant</title>
     <style>
         :root {
-            --primary-bg: #f9fafb;
-            --sidebar-bg: #031B4E;
-            --chat-bg: #ffffff;
-            --text-color: #111827;
-            --secondary-text: #6b7280;
-            --border-color: #e5e7eb;
+            --primary-color: #031B4E;
+            --secondary-color: #E5E8ED;
             --accent-color: #0061EB;
-            --assistant-bg: #E5E8ED;
-            --user-bg: #e9f2ff;
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --text-color: #333;
+            --light-gray: #f8f9fa;
+            --border-color: #e0e0e0;
         }
-
+        
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
         }
-
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--primary-bg);
-            color: var(--text-color);
-            line-height: 1.5;
+            display: flex;
             height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Left sidebar */
+        .sidebar {
+            width: 260px;
+            background-color: var(--primary-color);
+            color: white;
             display: flex;
             flex-direction: column;
+            flex-shrink: 0;
         }
-
-        header {
-            background-color: #ffffff;
-            border-bottom: 1px solid var(--border-color);
-            padding: 1rem;
-            box-shadow: var(--shadow-sm);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        
+        .sidebar-header {
+            padding: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-
+        
         .logo {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            font-weight: 600;
-            font-size: 1.25rem;
-            color: var(--sidebar-bg);
+            gap: 8px;
+            margin-bottom: 20px;
         }
-
-        .logo svg {
-            width: 32px;
-            height: 32px;
-            color: var(--accent-color);
-        }
-
-        main {
+        
+        .logo-icon {
+            width: 30px;
+            height: 30px;
+            background-color: var(--accent-color);
+            border-radius: 6px;
             display: flex;
-            height: calc(100vh - 65px);
-            overflow: hidden;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
         }
-
-        .chat-container {
-            flex: 1;
+        
+        .logo-text {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .new-chat-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .new-chat-btn:hover {
+            background-color: #0052cc;
+        }
+        
+        .history-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 16px 0 8px 16px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .chat-history {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 0 8px;
+        }
+        
+        .history-item {
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 4px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .history-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar-footer {
+            padding: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 14px;
+        }
+        
+        /* Main content area */
+        .main-content {
+            flex-grow: 1;
             display: flex;
             flex-direction: column;
-            background-color: var(--chat-bg);
-            max-width: 1000px;
+            background-color: #fff;
+        }
+        
+        .chat-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Welcome screen */
+        .welcome-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            padding: 0 20px;
+            text-align: center;
+        }
+        
+        .welcome-title {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--primary-color);
+        }
+        
+        .welcome-subtitle {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 40px;
+            max-width: 600px;
+        }
+        
+        .examples-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            width: 100%;
+            max-width: 900px;
+        }
+        
+        .example-card {
+            background-color: var(--light-gray);
+            border-radius: 8px;
+            padding: 16px;
+            cursor: pointer;
+            text-align: left;
+            border: 1px solid var(--border-color);
+        }
+        
+        .example-card:hover {
+            background-color: #e9ecf1;
+            border-color: #ccd0d5;
+        }
+        
+        .example-card h3 {
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+        }
+        
+        .example-card p {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        /* Chat messages */
+        .messages {
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+            max-width: 800px;
             margin: 0 auto;
             width: 100%;
         }
-
-        .messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 1rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
+        
         .message {
             display: flex;
-            gap: 1rem;
-            max-width: 90%;
-            animation: fadeIn 0.3s ease-in-out;
+            padding: 20px;
+            gap: 16px;
+            width: 100%;
         }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        
+        .message.user {
+            background-color: #f8f9fa;
         }
-
+        
+        .message.assistant {
+            background-color: #fff;
+        }
+        
         .avatar {
             width: 36px;
             height: 36px;
-            border-radius: 50%;
-            flex-shrink: 0;
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        
+        .avatar.user {
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+        }
+        
+        .avatar.assistant {
             background-color: var(--accent-color);
             color: white;
-            font-weight: bold;
         }
-
-        .avatar.user {
-            background-color: var(--sidebar-bg);
-        }
-
+        
         .message-content {
-            background-color: var(--assistant-bg);
-            padding: 1rem;
-            border-radius: 0.5rem;
-            box-shadow: var(--shadow-sm);
+            flex-grow: 1;
+            line-height: 1.6;
+            font-size: 15px;
         }
-
-        .user .message-content {
-            background-color: var(--user-bg);
-        }
-
-        .message-text {
-            white-space: pre-wrap;
-        }
-
-        .input-area {
-            border-top: 1px solid var(--border-color);
-            padding: 1rem;
-            background-color: white;
-        }
-
-        .input-container {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            max-width: 960px;
-            margin: 0 auto;
-        }
-
-        .input-box {
+        
+        pre {
+            background-color: #f1f3f5;
+            border-radius: 6px;
+            padding: 16px;
+            overflow-x: auto;
+            margin: 12px 0;
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
             position: relative;
+        }
+        
+        .copy-button {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 12px;
+            cursor: pointer;
             display: flex;
+            align-items: center;
+            gap: 4px;
         }
-
-        textarea {
-            flex: 1;
-            padding: 0.75rem 3rem 0.75rem 1rem;
-            border-radius: 0.5rem;
-            border: 1px solid var(--border-color);
+        
+        /* Input area */
+        .input-container {
+            border-top: 1px solid var(--border-color);
+            padding: 16px;
+            background-color: #fff;
+        }
+        
+        .input-wrapper {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .input-box {
+            width: 100%;
             resize: none;
-            min-height: 50px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 50px 12px 16px;
+            font-size: 16px;
+            line-height: 1.5;
             max-height: 200px;
-            font-family: inherit;
-            font-size: 1rem;
-            box-shadow: var(--shadow-sm);
-            transition: border-color 0.2s;
+            overflow-y: auto;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
-
-        textarea:focus {
+        
+        .input-box:focus {
             outline: none;
             border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(0, 97, 235, 0.2);
         }
-
+        
         .send-button {
             position: absolute;
-            right: 0.5rem;
-            bottom: 0.5rem;
+            right: 8px;
+            bottom: 8px;
             background-color: var(--accent-color);
-            color: white;
             border: none;
-            border-radius: 50%;
+            border-radius: 6px;
             width: 36px;
             height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
+            color: white;
             cursor: pointer;
-            transition: background-color 0.2s;
         }
-
+        
         .send-button:hover {
             background-color: #0052cc;
         }
-
+        
         .send-button:disabled {
-            background-color: var(--border-color);
+            background-color: #ccc;
             cursor: not-allowed;
         }
-
-        .examples {
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1.5rem;
-            text-align: center;
-        }
-
-        .welcome {
-            max-width: 600px;
-        }
-
-        .welcome h1 {
-            margin-bottom: 0.5rem;
-            color: var(--sidebar-bg);
-        }
-
-        .welcome p {
-            color: var(--secondary-text);
-            margin-bottom: 2rem;
-        }
-
-        .example-prompts {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1rem;
-            width: 100%;
-            max-width: 800px;
-        }
-
-        .example-card {
-            background-color: white;
-            border: 1px solid var(--border-color);
-            border-radius: 0.5rem;
-            padding: 1rem;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            text-align: left;
-        }
-
-        .example-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .loading {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-            padding: 1rem;
-            color: var(--secondary-text);
-        }
-
-        .dot {
-            width: 0.5rem;
-            height: 0.5rem;
-            background-color: var(--secondary-text);
-            border-radius: 50%;
-            animation: pulse 1.5s infinite ease-in-out;
-        }
-
-        .dot:nth-child(2) {
-            animation-delay: 0.3s;
-        }
-
-        .dot:nth-child(3) {
-            animation-delay: 0.6s;
-        }
-
-        @keyframes pulse {
-            0%, 100% {
-                transform: scale(0.8);
-                opacity: 0.6;
-            }
-            50% {
-                transform: scale(1.2);
-                opacity: 1;
-            }
-        }
-
-        /* Code styling */
-        pre {
-            background-color: #1e293b;
-            color: #e2e8f0;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            overflow-x: auto;
-            margin: 0.5rem 0;
-            position: relative;
-        }
-
-        pre code {
-            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
-            font-size: 0.9rem;
-            white-space: pre;
-        }
-
-        .copy-button {
-            position: absolute;
-            top: 0.5rem;
-            right: 0.5rem;
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: none;
-            border-radius: 0.25rem;
-            padding: 0.25rem 0.5rem;
-            font-size: 0.75rem;
-            cursor: pointer;
-            opacity: 0.7;
-            transition: opacity 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-
-        .copy-button:hover {
-            opacity: 1;
-        }
-
-        .language-tag {
-            position: absolute;
-            top: 0.5rem;
-            left: 0.5rem;
-            background-color: rgba(255, 255, 255, 0.1);
-            color: #cbd5e1;
-            border-radius: 0.25rem;
-            padding: 0.1rem 0.5rem;
-            font-size: 0.75rem;
-        }
-
-        /* Responsive */
+        
+        /* Mobile responsiveness */
         @media (max-width: 768px) {
-            main {
-                height: calc(100vh - 60px);
+            .sidebar {
+                display: none;
             }
-
-            .example-prompts {
+            
+            .examples-grid {
                 grid-template-columns: 1fr;
             }
+        }
+        
+        /* Hide do-ai widget button */
+        .do-chat-button {
+            display: none !important;
         }
     </style>
 </head>
 <body>
-    <header>
-        <div class="logo">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                <polyline points="7.5 4.21 12 6.81 16.5 4.21"></polyline>
-                <polyline points="7.5 19.79 7.5 14.6 3 12"></polyline>
-                <polyline points="21 12 16.5 14.6 16.5 19.79"></polyline>
-                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                <line x1="12" y1="22.08" x2="12" y2="12"></line>
-            </svg>
-            <span>DevOps Script Assistant</span>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <div class="logo-icon">S</div>
+                <div class="logo-text">ScriptAssist</div>
+            </div>
+            <button class="new-chat-btn" onclick="startNewChat()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                New chat
+            </button>
         </div>
-    </header>
+        
+        <div class="history-label">Recent chats</div>
+        <div class="chat-history">
+            <div class="history-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                Kubernetes monitoring script
+            </div>
+            <div class="history-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                AWS S3 backup automation
+            </div>
+            <div class="history-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                Docker log rotation script
+            </div>
+        </div>
+        
+        <div class="sidebar-footer">
+            <div>Powered by ScriptAssist AI</div>
+        </div>
+    </div>
 
-    <main>
-        <div class="chat-container">
-            <div class="messages" id="messages">
-                <div class="examples" id="examples">
-                    <div class="welcome">
-                        <h1>Welcome to DevOps Script Assistant</h1>
-                        <p>Your virtual assistant focused on Python and Bash scripting for SRE and DevOps workflows</p>
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="chat-container" id="chatContainer">
+            <!-- Welcome screen (shown initially) -->
+            <div class="welcome-container" id="welcomeScreen">
+                <h1 class="welcome-title">ScriptAssist</h1>
+                <p class="welcome-subtitle">Your AI assistant for Python and Bash scripting. Specialized in helping SREs and DevOps engineers create automation scripts.</p>
+                
+                <div class="examples-grid">
+                    <div class="example-card" onclick="sendExample('Create a Python script to monitor Kubernetes pod status and send alerts')">
+                        <h3>Kubernetes Monitoring</h3>
+                        <p>Generate a Python script to monitor Kubernetes pod status and send alerts when issues are detected</p>
                     </div>
-                    <div class="example-prompts">
-                        <div class="example-card" data-prompt="Create a bash script that monitors disk usage and sends an alert when any partition exceeds 80% usage.">
-                            Create a bash script that monitors disk usage and sends an alert when any partition exceeds 80% usage.
-                        </div>
-                        <div class="example-card" data-prompt="Write a Python script to rotate and compress log files older than 7 days.">
-                            Write a Python script to rotate and compress log files older than 7 days.
-                        </div>
-                        <div class="example-card" data-prompt="Develop a Python script that can parse Nginx access logs and generate a report of top IP addresses and requested URLs.">
-                            Develop a Python script that can parse Nginx access logs and generate a report of top IP addresses and requested URLs.
-                        </div>
-                        <div class="example-card" data-prompt="Create a bash script for automating database backups and storing them in AWS S3 with rotation policy.">
-                            Create a bash script for automating database backups and storing them in AWS S3 with rotation policy.
-                        </div>
+                    <div class="example-card" onclick="sendExample('Write a Bash script to monitor system resources and send alerts when thresholds are exceeded')">
+                        <h3>System Resources Monitoring</h3>
+                        <p>Create a Bash script to monitor CPU, memory, and disk usage with configurable thresholds</p>
+                    </div>
+                    <div class="example-card" onclick="sendExample('Help me create a Python script for automated AWS EC2 instance backups')">
+                        <h3>AWS EC2 Backup</h3>
+                        <p>Build a Python script for creating and managing EC2 instance backups with retention policies</p>
+                    </div>
+                    <div class="example-card" onclick="sendExample('Generate a Bash script for database backup and rotation')">
+                        <h3>Database Backup</h3>
+                        <p>Create a script that handles database backups with compression and rotation of old backups</p>
                     </div>
                 </div>
             </div>
-            <div class="input-area">
-                <div class="input-container">
-                    <div class="input-box">
-                        <textarea id="userInput" placeholder="Ask for Python or Bash scripts for your SRE/DevOps needs..." rows="1" oninput="this.style.height = ''; this.style.height = Math.min(this.scrollHeight, 200) + 'px'"></textarea>
-                        <button class="send-button" id="sendButton" disabled>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="22" y1="2" x2="11" y2="13"></line>
-                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
+            
+            <!-- Messages container (initially hidden) -->
+            <div class="messages" id="messagesContainer" style="display:none;">
+                <!-- Messages will appear here -->
             </div>
         </div>
-    </main>
+        
+        <!-- Input area -->
+        <div class="input-container">
+            <div class="input-wrapper">
+                <textarea id="userInput" class="input-box" placeholder="Ask about Python or Bash scripts for SRE and DevOps automation..." rows="1"></textarea>
+                <button id="sendButton" class="send-button" onclick="sendMessage()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
 
-    <!-- Include the GenAI chatbot script -->
-    <script async
-        src="https://rxnl6a3sqxrgj5u7z6u3bw2e.agents.do-ai.run/static/chatbot/widget.js"
-        data-agent-id="422fa471-13c5-11f0-bf8f-4e013e2ddde4"
-        data-chatbot-id="8S72tRVhzKo2aOgEIv-NdCKSI7PgHUtN"
-        data-name="Scripter Chatbot"
-        data-primary-color="#031B4E"
-        data-secondary-color="#E5E8ED"
-        data-button-background-color="#0061EB"
-        data-starting-message="Hello! How can I help you today?"
-        data-logo="/static/chatbot/icons/default-agent.svg">
-    </script>
+    <!-- Load the GenAI script - this loads in the background but we use our own UI -->
+    <script async src="https://rxnl6a3sqxrgj5u7z6u3bw2e.agents.do-ai.run/static/chatbot/widget.js" data-agent-id="422fa471-13c5-11f0-bf8f-4e013e2ddde4" data-chatbot-id="8S72tRVhzKo2aOgEIv-NdCKSI7PgHUtN" data-name="Scripter Chatbot" data-primary-color="#031B4E" data-secondary-color="#E5E8ED" data-button-background-color="#0061EB" data-starting-message="Hello! How can I help you today?" data-logo="/static/chatbot/icons/default-agent.svg"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const messagesContainer = document.getElementById('messages');
-            const examplesContainer = document.getElementById('examples');
-            const userInput = document.getElementById('userInput');
-            const sendButton = document.getElementById('sendButton');
-            
-            // Chat messages history
-            let chatHistory = [];
-            
-            // Agent communication
-            let agentReady = false;
-            let agentWidget = null;
-            
-            // Auto-resize textarea
-            userInput.addEventListener('input', function() {
-                sendButton.disabled = userInput.value.trim() === '';
-            });
-            
-            // Handle send button click
-            sendButton.addEventListener('click', sendMessage);
-            
-            // Handle Enter key (Shift+Enter for new line)
-            userInput.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' && !e.shiftKey && !sendButton.disabled) {
-                    e.preventDefault();
-                    sendMessage();
-                }
-            });
-            
-            // Handle example card clicks
-            document.querySelectorAll('.example-card').forEach(card => {
-                card.addEventListener('click', function() {
-                    userInput.value = this.getAttribute('data-prompt');
-                    userInput.style.height = '';
-                    userInput.style.height = Math.min(userInput.scrollHeight, 200) + 'px';
-                    sendButton.disabled = false;
-                    userInput.focus();
-                });
-            });
+        // Global variables
+        let agentLoaded = false;
+        let aiAgent = null;
+        let waitingForResponse = false;
+        let messageCount = 0;
+        
+        // Function to auto-resize textarea as user types
+        const textarea = document.getElementById('userInput');
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
 
-            // Wait for the agent widget to load
-            const checkWidgetInterval = setInterval(() => {
-                // Check if DO widget has been loaded
-                if (window._DOChatbot && window._DOChatbot.initialized) {
-                    clearInterval(checkWidgetInterval);
-                    setupAgentListener();
-                }
-            }, 500);
-
-            function setupAgentListener() {
-                agentWidget = window._DOChatbot;
-                
-                // Hide the floating widget button since we're using our own interface
-                const widgetButton = document.querySelector('.do-chatbot-launcher');
-                if (widgetButton) {
-                    widgetButton.style.display = 'none';
-                }
-                
-                // We're going to use the API directly instead of the widget UI
-                agentReady = true;
-                
-                // Initialize custom message listener
-                agentWidget.messageReceivedCallback = handleAgentResponse;
-            }
-
-            function sendMessage() {
-                const message = userInput.value.trim();
-                if (!message || !agentReady) return;
-                
-                // Hide examples if they're still showing
-                if (examplesContainer.style.display !== 'none') {
-                    examplesContainer.style.display = 'none';
-                }
-                
-                // Add user message to UI
-                addMessageToChat(message, 'user');
-                
-                // Clear input
-                userInput.value = '';
-                userInput.style.height = '';
-                sendButton.disabled = true;
-                
-                // Add loading indicator
-                const loadingDiv = document.createElement('div');
-                loadingDiv.className = 'loading';
-                loadingDiv.id = 'loading-indicator';
-                loadingDiv.innerHTML = `
-                    <div class="avatar">AI</div>
-                    <div class="message-content">
-                        <div class="dot"></div>
-                        <div class="dot"></div>
-                        <div class="dot"></div>
-                    </div>
-                `;
-                messagesContainer.appendChild(loadingDiv);
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                
-                // Send message to DO Agent
-                if (agentWidget && agentWidget.sendMessage) {
-                    agentWidget.sendMessage(message);
-                } else {
-                    // Fallback if the DO agent isn't ready
-                    setTimeout(() => {
-                        const loadingIndicator = document.getElementById('loading-indicator');
-                        if (loadingIndicator) {
-                            messagesContainer.removeChild(loadingIndicator);
-                        }
-                        addMessageToChat("I'm sorry, but I'm having trouble connecting to the DevOps assistant service. Please check your connection and try again.", 'assistant');
-                    }, 1500);
-                }
-            }
-            
-            function handleAgentResponse(response) {
-                // Remove loading indicator
-                const loadingIndicator = document.getElementById('loading-indicator');
-                if (loadingIndicator) {
-                    messagesContainer.removeChild(loadingIndicator);
-                }
-                
-                // Add agent response to chat
-                if (response && response.message) {
-                    addMessageToChat(response.message, 'assistant');
-                }
-            }
-            
-            function addMessageToChat(message, role) {
-                // Store in chat history
-                chatHistory.push({ role, message });
-                
-                // Create message element
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `message ${role === 'user' ? 'user' : ''}`;
-                
-                // Create avatar
-                const avatarDiv = document.createElement('div');
-                avatarDiv.className = `avatar ${role === 'user' ? 'user' : ''}`;
-                avatarDiv.textContent = role === 'user' ? 'U' : 'AI';
-                
-                // Create message content
-                const contentDiv = document.createElement('div');
-                contentDiv.className = 'message-content';
-                
-                if (role === 'assistant') {
-                    // Process markdown-like formatting for code blocks
-                    contentDiv.innerHTML = formatMessage(message);
-                    
-                    // Add copy functionality to code blocks
-                    const codeBlocks = contentDiv.querySelectorAll('pre');
-                    codeBlocks.forEach(block => {
-                        const code = block.querySelector('code').textContent;
-                        const copyButton = block.querySelector('.copy-button');
-                        
-                        if (copyButton) {
-                            copyButton.addEventListener('click', function() {
-                                navigator.clipboard.writeText(code).then(() => {
-                                    this.innerHTML = `
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <polyline points="20 6 9 17 4 12"></polyline>
-                                        </svg>
-                                        Copied!
-                                    `;
-                                    
-                                    setTimeout(() => {
-                                        this.innerHTML = `
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                            </svg>
-                                            Copy
-                                        `;
-                                    }, 2000);
-                                });
-                            });
-                        }
-                    });
-                } else {
-                    // Simple text for user messages
-                    contentDiv.textContent = message;
-                }
-                
-                // Assemble and add to the chat
-                messageDiv.appendChild(avatarDiv);
-                messageDiv.appendChild(contentDiv);
-                messagesContainer.appendChild(messageDiv);
-                
-                // Scroll to bottom
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            }
-            
-            function formatMessage(message) {
-                // Helper to detect code language
-                function detectLanguage(code) {
-                    if (code.includes('#!/bin/bash') || code.includes('echo ') || code.match(/\bif\s+\[\s/)) {
-                        return 'bash';
-                    } else if (code.includes('def ') || code.includes('import ') || code.includes('print(')) {
-                        return 'python';
-                    } else if (code.match(/function\s+\w+\(/) || code.includes('const ') || code.includes('let ')) {
-                        return 'javascript';
-                    } else if (code.includes('<!DOCTYPE') || code.includes('<html')) {
-                        return 'html';
-                    } else {
-                        return 'plaintext';
-                    }
-                }
-                
-                // Process code blocks with ```
-                let formattedMessage = message.replace(/```(\w*)([\s\S]*?)```/g, function(match, lang, code) {
-                    const language = lang || detectLanguage(code.trim());
-                    return `<pre>
-                        <span class="language-tag">${language}</span>
-                        <button class="copy-button">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                            </svg>
-                            Copy
-                        </button>
-                        <code>${code.trim()}</code>
-                    </pre>`;
-                });
-                
-                // Process inline code with `
-                formattedMessage = formattedMessage.replace(/`([^`]+)`/g, '<code style="background:#edf2f7;color:#1a202c;padding:0.1rem 0.3rem;border-radius:0.25rem;font-size:0.9em;">$1</code>');
-                
-                // Process bold with **
-                formattedMessage = formattedMessage.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-                
-                // Process italics with *
-                formattedMessage = formattedMessage.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-                
-                // Convert line breaks to <br>
-                formattedMessage = formattedMessage.replace(/\n/g, '<br>');
-                
-                return `<div class="message-text">${formattedMessage}</div>`;
+        // Handle Enter key to send message
+        textarea.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
             }
         });
-    </script>
-</body>
-</html>
+
+        // Start a new chat
+        function startNewChat() {
+            document.getElementById('welcomeScreen').style.display = 'none';
+            document.getElementById('messagesContainer').style.display = 'flex';
+            document.getElementById('messagesContainer').innerHTML = '';
+            
+            // Add welcome message
+            addMessage(
+                "Hi! I'm your DevOps scripting assistant. I can help you create Python and Bash scripts for automation, monitoring, and other SRE/DevOps tasks. What would you like help with today?",
+                'assistant'
+            );
+            
+            // Focus on input box
+            document.getElementById('userInput').focus();
+        }
+
+        // Use an example prompt
+        function sendExample(exampleText) {
+            document.getElementById('welcomeScreen').style.display = 'none';
+            document.getElementById('messagesContainer').style.display = 'flex';
+            document.getElementById('messagesContainer').innerHTML = '';
+            
+            // Add the example as a user message
+            addMessage(exampleText, 'user');
+            
+            // Process the example
+            processUserMessage(exampleText);
+        }
+
+        // Send user message
+        function sendMessage() {
+            const userInput = document.getElementById('userInput');
+            const message = userInput.value.trim();
+            
+            if (message && !waitingForResponse) {
+                // Clear the input
+                userInput.value = '';
+                userInput.style.height = 'auto';
+                
+                // Hide welcome screen if visible
+                if (document.getElementById('welcomeScreen').style.display !== 'none') {
+                    document.getElementById('welcomeScreen').style.display = 'none';
+                    document.getElementById('messagesContainer').style.display = 'flex';
+                }
+                
+                // Add user message to the conversation
+                addMessage(message, 'user');
+                
+                // Process the message
+                processUserMessage(message);
+            }
+        }
+
+        // Add a message to the conversation
+        function addMessage(content, sender) {
+            const messagesContainer = document.getElementById('messagesContainer');
+            
+            // Create message elements
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = `avatar ${sender}`;
+            avatar.textContent = sender === 'user' ? 'U' : 'S';
+            
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            
+            // Handle markdown-like content if it's a string
+            if (typeof content === 'string') {
+                // Simple code block detection
+                const codeBlockRegex = /```([\s\S]*?)```/g;
+                let lastIndex = 0;
+                let match;
+                
+                while ((match = codeBlockRegex.exec(content)) !== null) {
+                    // Add text before code block
+                    if (match.index > lastIndex) {
+                        const textBefore = content.substring(lastIndex, match.index);
+                        const textNode = document.createElement('p');
+                        textNode.textContent = textBefore;
+                        messageContent.appendChild(textNode);
+                    }
+                    
+                    // Add code block
+                    const pre = document.createElement('pre');
+                    const code = document.createElement('code');
+                    code.textContent = match[1].trim();
+                    pre.appendChild(code);
+                    
+                    // Add copy button
+                    const copyButton = document.createElement('button');
+                    copyButton.className = 'copy-button';
+                    copyButton.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                        Copy
+                    `;
+                    copyButton.onclick = function() {
+                        navigator.clipboard.writeText(code.textContent);
+                        copyButton.textContent = 'Copied!';
+                        setTimeout(() => {
+                            copyButton.innerHTML = `
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                                Copy
+                            `;
+                        }, 2000);
+                    };
+                    pre.appendChild(copyButton);
+                    
+                    messageContent.appendChild(pre);
+                    lastIndex = match.index + match[0].length;
+                }
+                
+                // Add remaining text after last code block
+                if (lastIndex < content.length) {
+                    const textAfter = content.substring(lastIndex);
+                    const textNode = document.createElement('p');
+                    textNode.textContent = textAfter;
+                    messageContent.appendChild(textNode);
+                }
+                
+                // If no code blocks were found, just add the content as is
+                if (lastIndex === 0) {
+                    messageContent.textContent = content;
+                }
+            } else {
+                // If content is not a string (shouldn't happen), convert to string
+                messageContent.textContent = String(content);
+            }
+            
+            // Assemble and append the message
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(messageContent);
+            messagesContainer.appendChild(messageDiv);
+            
+            // Scroll to the bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Process user message and get AI response
+        function processUserMessage(message) {
+            // Disable send button and indicate waiting
+            waitingForResponse = true;
+            const sendButton = document.getElementById('sendButton');
+            sendButton.disabled = true;
+            
+            // Add loading indicator
+            const loadingId = `loading-${Date.now()}`;
+            addMessage('Generating response...', 'assistant');
+            
+            // We're using a simulated AI interaction since we're embedding the external script
+            // For a real implementation, this would connect to the AI service
+            simulateAIResponse(message).then(aiResponse => {
+                // Remove loading message and add real response
+                const messagesContainer = document.getElementById('messagesContainer');
+                messagesContainer.lastChild.remove(); // Remove loading message
+                
+                // Add the AI response
+                addMessage(aiResponse, 'assistant');
+                
+                // Re-enable send button
+                waitingForResponse = false;
+                sendButton.disabled = false;
+            });
+        }
+
+        // Simulate AI response - in a real implementation, this would connect to the AI service
+        function simulateAIResponse(message) {
+            return new Promise((resolve) => {
+                // Simulate network delay
+                setTimeout(() => {
+                    let response;
+                    
+                    // Example responses based on message content
+                    if (message.toLowerCase().includes('kubernetes') && message.toLowerCase().includes('monitor')) {
+                        response = `I'd be happy to help you create a Kubernetes monitoring script. Here's a Python script that monitors pod status and sends alerts:
+
+\`\`\`
+#!/usr/bin/env python3
+import kubernetes
+from kubernetes import client, config
+import time
+import smtplib
+import os
+from email.mime.text import MIMEText
+from datetime import datetime
+
+# Configuration
+NAMESPACE = "default"  # Set to None to monitor all namespaces
+SLEEP_INTERVAL = 300   # Check every 5 minutes
+EMAIL_SERVER = "smtp.example.com"
+EMAIL_PORT = 587
+EMAIL_USER = "alerts@example.com"
+EMAIL_PASSWORD = os.environ.get("EMAIL_PASSWORD")
+EMAIL_TO = ["oncall@example.com"]
+
+def send_alert(subject, body):
+    """Send email alert for issues found"""
+    try:
+        msg = MIMEText(body)
+        msg['Subject'] = subject
+        msg['From'] = EMAIL_USER
+        msg['To'] = ', '.join(EMAIL_TO)
+        
+        server = smtplib.SMTP(EMAIL_SERVER, EMAIL_PORT)
+        server.starttls()
+        server.login(EMAIL_USER, EMAIL_PASSWORD)
+        server.send_message(msg)
+        server.quit()
+        print(f"Alert sent: {subject}")
+    except Exception as e:
+        print(f"Failed to send alert: {e}")
+
+def check_pods():
+    """Check Kubernetes pods for issues"""
+    try:
+        # Load Kubernetes configuration
+        try:
+            config.load_incluster_config()  # If running inside cluster
+        except kubernetes.config.ConfigException:
+            config.load_kube_config()  # If running outside cluster
+        
+        v1 = client.CoreV1Api()
+        
+        # Get pods in namespace or all namespaces
+        if NAMESPACE:
+            pods = v1.list_namespaced_pod(NAMESPACE)
+        else:
+            pods = v1.list_pod_for_all_namespaces()
+        
+        issues = []
+        for pod in pods.items:
+            pod_name = pod.metadata.name
+            namespace = pod.metadata.namespace
+            status = pod.status.phase
+            
+            # Check pod status
+            if status != "Running" and status != "Succeeded":
+                issues.append(f"Pod {pod_name} in namespace {namespace} has status: {status}")
+            
+            # Check container statuses
+            if pod.status.container_statuses:
+                for container in pod.status.container_statuses:
+                    if not container.ready and status == "Running":
+                        restart_count = container.restart_count
+                        
+                        # Get reason for container not being ready
+                        reason = "Unknown"
+                        if container.state.waiting:
+                            reason = container.state.waiting.reason
+                        elif container.state.terminated:
+                            reason = container.state.terminated.reason
+                        
+                        issues.append(f"Container {container.name} in pod {pod_name} (namespace {namespace}) is not ready. Reason: {reason}, Restarts: {restart_count}")
+        
+        # Send alert if issues were found
+        if issues:
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            subject = f"Kubernetes Alert: {len(issues)} issues detected"
+            body = f"Kubernetes Pod Issues Detected at {timestamp}\\n\\n"
+            body += "\\n".join(issues)
+            body += "\\n\\nPlease investigate these issues."
+            send_alert(subject, body)
+            print(f"{timestamp} - {len(issues)} issues found")
+        else:
+            print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - All pods are healthy")
+            
+    except Exception as e:
+        print(f"Error checking pods: {e}")
+        send_alert("Kubernetes Monitoring Script Error", f"The pod monitoring script encountered an error: {e}")
+
+def main():
+    print(f"Starting Kubernetes pod monitoring (checking every {SLEEP_INTERVAL} seconds)")
+    while True:
+        try:
+            check_pods()
+            time.sleep(SLEEP_INTERVAL)
+        except KeyboardInterrupt:
+            print("Monitoring stopped by user.")
+            break
+
+if __name__ == "__main__":
+    main()
+\`\`\`
+
+This script:
+1. Connects to your Kubernetes cluster (works both in-cluster and externally)
+2. Checks all pods in a specified namespace (or all namespaces)
+3. Detects pods not in "Running" state and containers that aren't ready
+4. Sends email alerts when issues are found
+5. Runs continuously with configurable check intervals
+
+To use it:
+- Install dependencies: `pip install kubernetes`
+- Set the EMAIL_PASSWORD environment variable
+- Configure the email settings and namespace at the top
+- Run the script on a server or within your cluster as a cronjob
+
+Would you like me to explain any part of this script in more detail?`;
+                    } 
+                    else if (message.toLowerCase().includes('system') && (message.toLowerCase().includes('monitor') || message.toLowerCase().includes('resources'))) {
+                        response = `Here's a Bash script to monitor system resources (CPU, memory, disk) and send alerts when thresholds are exceeded:
+
+\`\`\`
+#!/bin/bash
+# System Resource Monitoring Script
+# Monitors CPU, memory, and disk usage and sends alerts when thresholds are exceeded
+
+# Configuration
+CPU_THRESHOLD=80       # CPU usage percentage threshold
+MEMORY_THRESHOLD=80    # Memory usage percentage threshold
+DISK_THRESHOLD=80      # Disk usage percentage threshold
+CHECK_INTERVAL=300     # Check every 5 minutes (300 seconds)
+
+# Alert configuration
+ALERT_EMAIL="admin@example.com"
+SLACK_WEBHOOK_URL=""   # Optional: Add your Slack webhook URL here
+
+# Log file
+LOG_FILE="/var/log/system_monitor.log"
+HOSTNAME=$(hostname)
+
+# Function to send email alert
+send_email_alert() {
+    local subject="$1"
+    local message="$2"
+    
+    echo "$message" | mail -s "$subject" "$ALERT_EMAIL"
+}
+
+# Function to send Slack alert
+send_slack_alert() {
+    local title="$1"
+    local message="$2"
+    
+    if [ -n "$SLACK_WEBHOOK_URL" ]; then
+        curl -s -X POST -H 'Content-type: application/json' \
+        --data "{
+            \"text\": \"*$title*\",
+            \"blocks\": [
