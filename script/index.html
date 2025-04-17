@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevOps Script Assistant</title>
+    <style>
+        :root {
+            --primary-bg: #f9fafb;
+            --sidebar-bg: #031B4E;
+            --chat-bg: #ffffff;
+            --text-color: #111827;
+            --secondary-text: #6b7280;
+            --border-color: #e5e7eb;
+            --accent-color: #0061EB;
+            --assistant-bg: #E5E8ED;
+            --user-bg: #e9f2ff;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+            line-height: 1.5;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: var(--sidebar-bg);
+        }
+
+        .logo svg {
+            width: 32px;
+            height: 32px;
+            color: var(--accent-color);
+        }
+
+        main {
+            display: flex;
+            height: calc(100vh - 65px);
+            overflow: hidden;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--chat-bg);
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .message {
+            display: flex;
+            gap: 1rem;
+            max-width: 90%;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--accent-color);
+            color: white;
+            font-weight: bold;
+        }
+
+        .avatar.user {
+            background-color: var(--sidebar-bg);
+        }
+
+        .message-content {
+            background-color: var(--assistant-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .user .message-content {
+            background-color: var(--user-bg);
+        }
+
+        .message-text {
+            white-space: pre-wrap;
+        }
+
+        .input-area {
+            border-top: 1px solid var(--border-color);
+            padding: 1rem;
+            background-color: white;
+        }
+
+        .input-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        .input-box {
+            position: relative;
+            display: flex;
+        }
+
+        textarea {
+            flex: 1;
+            padding: 0.75rem 3rem 0.75rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+            resize: none;
+            min-height: 50px;
+            max-height: 200px;
+            font-family: inherit;
+            font-size: 1rem;
+            box-shadow: var(--shadow-sm);
+            transition: border-color 0.2s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .send-button {
+            position: absolute;
+            right: 0.5rem;
+            bottom: 0.5rem;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .send-button:hover {
+            background-color: #0052cc;
+        }
+
+        .send-button:disabled {
+            background-color: var(--border-color);
+            cursor: not-allowed;
+        }
+
+        .examples {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            text-align: center;
+        }
+
+        .welcome {
+            max-width: 600px;
+        }
+
+        .welcome h1 {
+            margin-bottom: 0.5rem;
+            color: var(--sidebar-bg);
+        }
+
+        .welcome p {
+            color: var(--secondary-text);
+            margin-bottom: 2rem;
+        }
+
+        .example-prompts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .example-card {
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-align: left;
+        }
+
+        .example-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .loading {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            padding: 1rem;
+            color: var(--secondary-text);
+        }
+
+        .dot {
+            width: 0.5rem;
+            height: 0.5rem;
+            background-color: var(--secondary-text);
+            border-radius: 50%;
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+
+        .dot:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+
+        .dot:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(0.8);
+                opacity: 0.6;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+        }
+
+        /* Code styling */
+        pre {
+            background-color: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin: 0.5rem 0;
+            position: relative;
+        }
+
+        pre code {
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 0.9rem;
+            white-space: pre;
+        }
+
+        .copy-button {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            border-radius: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .copy-button:hover {
+            opacity: 1;
+        }
+
+        .language-tag {
+            position: absolute;
+            top: 0.5rem;
+            left: 0.5rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
+            border-radius: 0.25rem;
+            padding: 0.1rem 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            main {
+                height: calc(100vh - 60px);
+            }
+
+            .example-prompts {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <polyline points="7.5 4.21 12 6.81 16.5 4.21"></polyline>
+                <polyline points="7.5 19.79 7.5 14.6 3 12"></polyline>
+                <polyline points="21 12 16.5 14.6 16.5 19.79"></polyline>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+            <span>DevOps Script Assistant</span>
+        </div>
+    </header>
+
+    <main>
+        <div class="chat-container">
+            <div class="messages" id="messages">
+                <div class="examples" id="examples">
+                    <div class="welcome">
+                        <h1>Welcome to DevOps Script Assistant</h1>
+                        <p>Your virtual assistant focused on Python and Bash scripting for SRE and DevOps workflows</p>
+                    </div>
+                    <div class="example-prompts">
+                        <div class="example-card" data-prompt="Create a bash script that monitors disk usage and sends an alert when any partition exceeds 80% usage.">
+                            Create a bash script that monitors disk usage and sends an alert when any partition exceeds 80% usage.
+                        </div>
+                        <div class="example-card" data-prompt="Write a Python script to rotate and compress log files older than 7 days.">
+                            Write a Python script to rotate and compress log files older than 7 days.
+                        </div>
+                        <div class="example-card" data-prompt="Develop a Python script that can parse Nginx access logs and generate a report of top IP addresses and requested URLs.">
+                            Develop a Python script that can parse Nginx access logs and generate a report of top IP addresses and requested URLs.
+                        </div>
+                        <div class="example-card" data-prompt="Create a bash script for automating database backups and storing them in AWS S3 with rotation policy.">
+                            Create a bash script for automating database backups and storing them in AWS S3 with rotation policy.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="input-area">
+                <div class="input-container">
+                    <div class="input-box">
+                        <textarea id="userInput" placeholder="Ask for Python or Bash scripts for your SRE/DevOps needs..." rows="1" oninput="this.style.height = ''; this.style.height = Math.min(this.scrollHeight, 200) + 'px'"></textarea>
+                        <button class="send-button" id="sendButton" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Include the GenAI chatbot script -->
+    <script async
+        src="https://rxnl6a3sqxrgj5u7z6u3bw2e.agents.do-ai.run/static/chatbot/widget.js"
+        data-agent-id="422fa471-13c5-11f0-bf8f-4e013e2ddde4"
+        data-chatbot-id="8S72tRVhzKo2aOgEIv-NdCKSI7PgHUtN"
+        data-name="Scripter Chatbot"
+        data-primary-color="#031B4E"
+        data-secondary-color="#E5E8ED"
+        data-button-background-color="#0061EB"
+        data-starting-message="Hello! How can I help you today?"
+        data-logo="/static/chatbot/icons/default-agent.svg">
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const messagesContainer = document.getElementById('messages');
+            const examplesContainer = document.getElementById('examples');
+            const userInput = document.getElementById('userInput');
+            const sendButton = document.getElementById('sendButton');
+            
+            // Chat messages history
+            let chatHistory = [];
+            
+            // Agent communication
+            let agentReady = false;
+            let agentWidget = null;
+            
+            // Auto-resize textarea
+            userInput.addEventListener('input', function() {
+                sendButton.disabled = userInput.value.trim() === '';
+            });
+            
+            // Handle send button click
+            sendButton.addEventListener('click', sendMessage);
+            
+            // Handle Enter key (Shift+Enter for new line)
+            userInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey && !sendButton.disabled) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+            
+            // Handle example card clicks
+            document.querySelectorAll('.example-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    userInput.value = this.getAttribute('data-prompt');
+                    userInput.style.height = '';
+                    userInput.style.height = Math.min(userInput.scrollHeight, 200) + 'px';
+                    sendButton.disabled = false;
+                    userInput.focus();
+                });
+            });
+
+            // Wait for the agent widget to load
+            const checkWidgetInterval = setInterval(() => {
+                // Check if DO widget has been loaded
+                if (window._DOChatbot && window._DOChatbot.initialized) {
+                    clearInterval(checkWidgetInterval);
+                    setupAgentListener();
+                }
+            }, 500);
+
+            function setupAgentListener() {
+                agentWidget = window._DOChatbot;
+                
+                // Hide the floating widget button since we're using our own interface
+                const widgetButton = document.querySelector('.do-chatbot-launcher');
+                if (widgetButton) {
+                    widgetButton.style.display = 'none';
+                }
+                
+                // We're going to use the API directly instead of the widget UI
+                agentReady = true;
+                
+                // Initialize custom message listener
+                agentWidget.messageReceivedCallback = handleAgentResponse;
+            }
+
+            function sendMessage() {
+                const message = userInput.value.trim();
+                if (!message || !agentReady) return;
+                
+                // Hide examples if they're still showing
+                if (examplesContainer.style.display !== 'none') {
+                    examplesContainer.style.display = 'none';
+                }
+                
+                // Add user message to UI
+                addMessageToChat(message, 'user');
+                
+                // Clear input
+                userInput.value = '';
+                userInput.style.height = '';
+                sendButton.disabled = true;
+                
+                // Add loading indicator
+                const loadingDiv = document.createElement('div');
+                loadingDiv.className = 'loading';
+                loadingDiv.id = 'loading-indicator';
+                loadingDiv.innerHTML = `
+                    <div class="avatar">AI</div>
+                    <div class="message-content">
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                    </div>
+                `;
+                messagesContainer.appendChild(loadingDiv);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                
+                // Send message to DO Agent
+                if (agentWidget && agentWidget.sendMessage) {
+                    agentWidget.sendMessage(message);
+                } else {
+                    // Fallback if the DO agent isn't ready
+                    setTimeout(() => {
+                        const loadingIndicator = document.getElementById('loading-indicator');
+                        if (loadingIndicator) {
+                            messagesContainer.removeChild(loadingIndicator);
+                        }
+                        addMessageToChat("I'm sorry, but I'm having trouble connecting to the DevOps assistant service. Please check your connection and try again.", 'assistant');
+                    }, 1500);
+                }
+            }
+            
+            function handleAgentResponse(response) {
+                // Remove loading indicator
+                const loadingIndicator = document.getElementById('loading-indicator');
+                if (loadingIndicator) {
+                    messagesContainer.removeChild(loadingIndicator);
+                }
+                
+                // Add agent response to chat
+                if (response && response.message) {
+                    addMessageToChat(response.message, 'assistant');
+                }
+            }
+            
+            function addMessageToChat(message, role) {
+                // Store in chat history
+                chatHistory.push({ role, message });
+                
+                // Create message element
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${role === 'user' ? 'user' : ''}`;
+                
+                // Create avatar
+                const avatarDiv = document.createElement('div');
+                avatarDiv.className = `avatar ${role === 'user' ? 'user' : ''}`;
+                avatarDiv.textContent = role === 'user' ? 'U' : 'AI';
+                
+                // Create message content
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'message-content';
+                
+                if (role === 'assistant') {
+                    // Process markdown-like formatting for code blocks
+                    contentDiv.innerHTML = formatMessage(message);
+                    
+                    // Add copy functionality to code blocks
+                    const codeBlocks = contentDiv.querySelectorAll('pre');
+                    codeBlocks.forEach(block => {
+                        const code = block.querySelector('code').textContent;
+                        const copyButton = block.querySelector('.copy-button');
+                        
+                        if (copyButton) {
+                            copyButton.addEventListener('click', function() {
+                                navigator.clipboard.writeText(code).then(() => {
+                                    this.innerHTML = `
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                        Copied!
+                                    `;
+                                    
+                                    setTimeout(() => {
+                                        this.innerHTML = `
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                            </svg>
+                                            Copy
+                                        `;
+                                    }, 2000);
+                                });
+                            });
+                        }
+                    });
+                } else {
+                    // Simple text for user messages
+                    contentDiv.textContent = message;
+                }
+                
+                // Assemble and add to the chat
+                messageDiv.appendChild(avatarDiv);
+                messageDiv.appendChild(contentDiv);
+                messagesContainer.appendChild(messageDiv);
+                
+                // Scroll to bottom
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+            
+            function formatMessage(message) {
+                // Helper to detect code language
+                function detectLanguage(code) {
+                    if (code.includes('#!/bin/bash') || code.includes('echo ') || code.match(/\bif\s+\[\s/)) {
+                        return 'bash';
+                    } else if (code.includes('def ') || code.includes('import ') || code.includes('print(')) {
+                        return 'python';
+                    } else if (code.match(/function\s+\w+\(/) || code.includes('const ') || code.includes('let ')) {
+                        return 'javascript';
+                    } else if (code.includes('<!DOCTYPE') || code.includes('<html')) {
+                        return 'html';
+                    } else {
+                        return 'plaintext';
+                    }
+                }
+                
+                // Process code blocks with ```
+                let formattedMessage = message.replace(/```(\w*)([\s\S]*?)```/g, function(match, lang, code) {
+                    const language = lang || detectLanguage(code.trim());
+                    return `<pre>
+                        <span class="language-tag">${language}</span>
+                        <button class="copy-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            Copy
+                        </button>
+                        <code>${code.trim()}</code>
+                    </pre>`;
+                });
+                
+                // Process inline code with `
+                formattedMessage = formattedMessage.replace(/`([^`]+)`/g, '<code style="background:#edf2f7;color:#1a202c;padding:0.1rem 0.3rem;border-radius:0.25rem;font-size:0.9em;">$1</code>');
+                
+                // Process bold with **
+                formattedMessage = formattedMessage.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+                
+                // Process italics with *
+                formattedMessage = formattedMessage.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+                
+                // Convert line breaks to <br>
+                formattedMessage = formattedMessage.replace(/\n/g, '<br>');
+                
+                return `<div class="message-text">${formattedMessage}</div>`;
+            }
+        });
+    </script>
+</body>
+</html>
