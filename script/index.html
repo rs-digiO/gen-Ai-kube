@@ -43,13 +43,6 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         
-        .sidebar {
-            width: 250px;
-            background-color: var(--primary-color);
-            color: white;
-            padding: 20px;
-        }
-        
         .chat-area {
             flex-grow: 1;
             display: flex;
@@ -73,13 +66,11 @@
         .user-message {
             background-color: var(--accent-color);
             color: white;
-            align-self: flex-end;
             margin-left: auto;
         }
         
         .ai-message {
             background-color: var(--light-gray);
-            align-self: flex-start;
         }
         
         .input-area {
@@ -114,13 +105,71 @@
             background-color: #0052cc;
         }
         
-        .hidden {
-            display: none;
+        .send-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
         }
         
-        /* Make the custom UI container visible and the default widget hidden */
-        #custom-ui {
-            display: block;
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0, 97, 235, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--accent-color);
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .info-panel {
+            background-color: var(--light-gray);
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        
+        code {
+            background-color: #f1f1f1;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        
+        .typing-indicator {
+            display: inline-flex;
+            align-items: center;
+            margin-left: 5px;
+        }
+        
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            margin: 0 1px;
+            background-color: #888;
+            border-radius: 50%;
+            display: inline-block;
+            animation: bounce 1.5s infinite ease-in-out;
+        }
+        
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes bounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-5px); }
         }
     </style>
 </head>
@@ -132,7 +181,14 @@
     </header>
     
     <div class="container">
-        <div class="chat-container" id="custom-ui">
+        <div class="info-panel">
+            <h3>AI Chat Demo Interface</h3>
+            <p>This is a standalone chat interface template that simulates AI responses. 
+               To connect to your actual AI backend, replace the <code>simulateResponse</code> function with 
+               API calls to your endpoint at <code>https://rxnl6a3sqxrgj5u7z6u3bw2e.agents.do-ai.run/</code>.</p>
+        </div>
+        
+        <div class="chat-container">
             <div class="chat-area">
                 <div class="messages" id="messages-container">
                     <div class="message ai-message">
@@ -142,52 +198,90 @@
                 <div class="input-area">
                     <textarea id="user-input" placeholder="Type your message here..." rows="3"></textarea>
                     <button class="send-button" id="send-button">Send</button>
+                    <div id="loading-indicator" class="loading hidden"></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Load the original chatbot script -->
-    <script async src="https://rxnl6a3sqxrgj5u7z6u3bw2e.agents.do-ai.run/static/chatbot/widget.js" data-agent-id="422fa471-13c5-11f0-bf8f-4e013e2ddde4" data-chatbot-id="8S72tRVhzKo2aOgEIv-NdCKSI7PgHUtN" data-name="Scripter Chatbot" data-primary-color="`#031B4E`" data-secondary-color="`#E5E8ED`" data-button-background-color="`#0061EB`" data-starting-message="Hello! How can I help you today?" data-logo="/static/chatbot/icons/default-agent.svg"></script>
-    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Wait for the chatbot script to fully load
-            setTimeout(() => {
-                // Find the chatbot elements that get injected by the script
-                const chatbotWidget = document.querySelector('div[id^="do-ai-widget"]');
-                const chatbotButton = document.querySelector('button[id^="do-ai-widget"]');
-                
-                if (chatbotWidget) {
-                    // Hide the default chatbot UI
-                    chatbotWidget.style.display = 'none';
-                }
-                
-                if (chatbotButton) {
-                    // Hide the default chat button
-                    chatbotButton.style.display = 'none';
-                }
-                
-                // Initialize our custom UI
-                setupCustomChatInterface();
-            }, 2000); // Give some time for the chatbot script to load
-        });
-
-        function setupCustomChatInterface() {
+            // Elements
             const sendButton = document.getElementById('send-button');
             const userInput = document.getElementById('user-input');
             const messagesContainer = document.getElementById('messages-container');
+            const loadingIndicator = document.getElementById('loading-indicator');
             
-            // Get the chatbot's API functions
-            const chatbotApi = window.doAI && window.doAI.getChatbotApi();
+            // Sample responses for demo
+            const sampleResponses = [
+                "I'm here to help! What specific information are you looking for?",
+                "That's an interesting question. Based on my knowledge, I would suggest...",
+                "Thank you for your message. I understand you're asking about...",
+                "I'd be happy to assist with that. Here's what I can tell you...",
+                "Great question! The answer depends on several factors...",
+                "I've analyzed your request and here's what I found...",
+                "Based on the information provided, my recommendation would be...",
+                "I'm processing your request. From what I understand, you're asking about..."
+            ];
             
-            if (!chatbotApi) {
-                console.error('Chatbot API not found. Make sure the chatbot script is loaded correctly.');
-                return;
+            // Function to simulate AI response
+            function simulateResponse(message) {
+                return new Promise((resolve) => {
+                    // Simulate thinking time (1-3 seconds)
+                    const thinkingTime = 1000 + Math.random() * 2000;
+                    
+                    setTimeout(() => {
+                        // Generate a response based on user input
+                        let response;
+                        
+                        // Custom responses based on specific inputs
+                        if (message.toLowerCase().includes('hello') || message.toLowerCase().includes('hi')) {
+                            response = "Hello! It's nice to meet you. How can I assist you today?";
+                        } 
+                        else if (message.toLowerCase().includes('help')) {
+                            response = "I'm here to help! Please let me know what you need assistance with, and I'll do my best to provide relevant information.";
+                        }
+                        else if (message.toLowerCase().includes('thank')) {
+                            response = "You're welcome! If you have any other questions, feel free to ask.";
+                        }
+                        else if (message.toLowerCase().includes('how are you')) {
+                            response = "I'm functioning well, thank you for asking! How can I assist you today?";
+                        }
+                        else if (message.length < 5) {
+                            response = "I notice your message is quite short. Could you provide more details so I can better assist you?";
+                        }
+                        else {
+                            // Pick a random response from the sample list
+                            const randomIndex = Math.floor(Math.random() * sampleResponses.length);
+                            response = sampleResponses[randomIndex] + " Regarding your message about \"" + message.substring(0, 30) + (message.length > 30 ? "..." : "") + "\", I would suggest exploring this topic further.";
+                        }
+                        
+                        resolve(response);
+                    }, thinkingTime);
+                });
+            }
+            
+            // Simulate typing animation
+            function simulateTyping(text, element) {
+                return new Promise((resolve) => {
+                    // Create typing indicator
+                    const typingIndicator = document.createElement('div');
+                    typingIndicator.className = 'typing-indicator';
+                    typingIndicator.innerHTML = '<span></span><span></span><span></span>';
+                    element.textContent = '';
+                    element.appendChild(typingIndicator);
+                    
+                    // Wait a bit to show typing
+                    setTimeout(() => {
+                        // Remove typing indicator and set text
+                        element.textContent = text;
+                        resolve();
+                    }, 1500);
+                });
             }
             
             // Function to send a message
-            function sendMessage() {
+            async function sendMessage() {
                 const message = userInput.value.trim();
                 if (!message) return;
                 
@@ -197,16 +291,29 @@
                 // Clear input
                 userInput.value = '';
                 
-                // Send to AI and get response
-                chatbotApi.sendMessage(message)
-                    .then(response => {
-                        // Add AI response to UI
-                        addMessageToUI(response.text, 'ai');
-                    })
-                    .catch(error => {
-                        console.error('Error sending message:', error);
-                        addMessageToUI('Sorry, there was an error processing your request.', 'ai');
-                    });
+                // Disable send button and show loading
+                sendButton.disabled = true;
+                loadingIndicator.classList.remove('hidden');
+                
+                // Create AI message container but leave empty
+                const aiMessageDiv = document.createElement('div');
+                aiMessageDiv.className = 'message ai-message';
+                messagesContainer.appendChild(aiMessageDiv);
+                
+                // Simulate AI response
+                try {
+                    const response = await simulateResponse(message);
+                    await simulateTyping(response, aiMessageDiv);
+                } catch (error) {
+                    aiMessageDiv.textContent = 'Sorry, there was an error processing your request.';
+                } finally {
+                    // Re-enable send button and hide loading
+                    sendButton.disabled = false;
+                    loadingIndicator.classList.add('hidden');
+                    
+                    // Scroll to bottom
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                }
             }
             
             // Function to add message to UI
@@ -229,7 +336,7 @@
                     sendMessage();
                 }
             });
-        }
+        });
     </script>
 </body>
 </html>
