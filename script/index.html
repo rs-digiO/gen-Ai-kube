@@ -3,808 +3,233 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ScriptAssist | SRE & DevOps Automation Assistant</title>
+    <title>AI Inferencing Interface</title>
     <style>
         :root {
             --primary-color: #031B4E;
             --secondary-color: #E5E8ED;
             --accent-color: #0061EB;
             --text-color: #333;
-            --light-gray: #f8f9fa;
-            --border-color: #e0e0e0;
-        }
-        
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            --light-gray: #f5f5f5;
         }
         
         body {
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
         }
         
-        /* Left sidebar */
-        .sidebar {
-            width: 260px;
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
             background-color: var(--primary-color);
             color: white;
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-        }
-        
-        .sidebar-header {
-            padding: 16px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-        
-        .logo-icon {
-            width: 30px;
-            height: 30px;
-            background-color: var(--accent-color);
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: white;
-        }
-        
-        .logo-text {
-            font-size: 18px;
-            font-weight: 600;
-        }
-        
-        .new-chat-btn {
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            width: 100%;
-            cursor: pointer;
-            font-weight: 500;
-        }
-        
-        .new-chat-btn:hover {
-            background-color: #0052cc;
-        }
-        
-        .history-label {
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin: 16px 0 8px 16px;
-            color: rgba(255, 255, 255, 0.6);
-        }
-        
-        .chat-history {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding: 0 8px;
-        }
-        
-        .history-item {
-            padding: 8px;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-bottom: 4px;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .history-item:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-        
-        .sidebar-footer {
-            padding: 16px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 14px;
-        }
-        
-        /* Main content area */
-        .main-content {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            background-color: #fff;
-        }
-        
-        .chat-container {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        /* Welcome screen */
-        .welcome-container {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100%;
-            padding: 0 20px;
+            padding: 20px 0;
             text-align: center;
         }
         
-        .welcome-title {
-            font-size: 28px;
-            font-weight: 600;
-            margin-bottom: 16px;
-            color: var(--primary-color);
-        }
-        
-        .welcome-subtitle {
-            font-size: 16px;
-            color: #666;
-            margin-bottom: 40px;
-            max-width: 600px;
-        }
-        
-        .examples-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 16px;
-            width: 100%;
-            max-width: 900px;
-        }
-        
-        .example-card {
-            background-color: var(--light-gray);
+        .chat-container {
+            display: flex;
+            height: calc(100vh - 180px);
+            margin-top: 20px;
             border-radius: 8px;
-            padding: 16px;
-            cursor: pointer;
-            text-align: left;
-            border: 1px solid var(--border-color);
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         
-        .example-card:hover {
-            background-color: #e9ecf1;
-            border-color: #ccd0d5;
+        .sidebar {
+            width: 250px;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
         }
         
-        .example-card h3 {
-            font-size: 16px;
-            margin-bottom: 8px;
-            color: var(--primary-color);
-        }
-        
-        .example-card p {
-            font-size: 14px;
-            color: #666;
-        }
-        
-        /* Chat messages */
-        .messages {
+        .chat-area {
+            flex-grow: 1;
             display: flex;
             flex-direction: column;
-            padding: 20px 0;
-            max-width: 800px;
-            margin: 0 auto;
-            width: 100%;
+            background-color: white;
+        }
+        
+        .messages {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
         }
         
         .message {
-            display: flex;
-            padding: 20px;
-            gap: 16px;
-            width: 100%;
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            max-width: 80%;
         }
         
-        .message.user {
-            background-color: #f8f9fa;
-        }
-        
-        .message.assistant {
-            background-color: #fff;
-        }
-        
-        .avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            flex-shrink: 0;
-        }
-        
-        .avatar.user {
-            background-color: var(--secondary-color);
-            color: var(--primary-color);
-        }
-        
-        .avatar.assistant {
+        .user-message {
             background-color: var(--accent-color);
             color: white;
+            align-self: flex-end;
+            margin-left: auto;
         }
         
-        .message-content {
+        .ai-message {
+            background-color: var(--light-gray);
+            align-self: flex-start;
+        }
+        
+        .input-area {
+            display: flex;
+            padding: 15px;
+            background-color: var(--light-gray);
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .input-area textarea {
             flex-grow: 1;
-            line-height: 1.6;
-            font-size: 15px;
-        }
-        
-        pre {
-            background-color: #f1f3f5;
-            border-radius: 6px;
-            padding: 16px;
-            overflow-x: auto;
-            margin: 12px 0;
-            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
-            font-size: 14px;
-            position: relative;
-        }
-        
-        .copy-button {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background-color: rgba(255, 255, 255, 0.8);
+            padding: 12px;
             border: 1px solid #ddd;
             border-radius: 4px;
-            padding: 4px 8px;
-            font-size: 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        
-        /* Input area */
-        .input-container {
-            border-top: 1px solid var(--border-color);
-            padding: 16px;
-            background-color: #fff;
-        }
-        
-        .input-wrapper {
-            max-width: 800px;
-            margin: 0 auto;
-            position: relative;
-        }
-        
-        .input-box {
-            width: 100%;
             resize: none;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 12px 50px 12px 16px;
-            font-size: 16px;
-            line-height: 1.5;
-            max-height: 200px;
-            overflow-y: auto;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-        }
-        
-        .input-box:focus {
-            outline: none;
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 2px rgba(0, 97, 235, 0.2);
+            font-family: inherit;
+            font-size: 14px;
         }
         
         .send-button {
-            position: absolute;
-            right: 8px;
-            bottom: 8px;
             background-color: var(--accent-color);
-            border: none;
-            border-radius: 6px;
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 0 20px;
+            margin-left: 10px;
             cursor: pointer;
+            font-weight: bold;
         }
         
         .send-button:hover {
             background-color: #0052cc;
         }
         
-        .send-button:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
+        .hidden {
+            display: none;
         }
         
-        /* Mobile responsiveness */
-        @media (max-width: 768px) {
-            .sidebar {
-                display: none;
-            }
-            
-            .examples-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        /* Hide do-ai widget button */
-        .do-chat-button {
-            display: none !important;
+        /* Make the custom UI container visible and the default widget hidden */
+        #custom-ui {
+            display: block;
         }
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <div class="logo">
-                <div class="logo-icon">S</div>
-                <div class="logo-text">ScriptAssist</div>
-            </div>
-            <button class="new-chat-btn" onclick="startNewChat()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                New chat
-            </button>
+    <header>
+        <div class="container">
+            <h1>AI Assistant</h1>
         </div>
-        
-        <div class="history-label">Recent chats</div>
-        <div class="chat-history">
-            <div class="history-item">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                </svg>
-                Kubernetes monitoring script
-            </div>
-            <div class="history-item">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                </svg>
-                AWS S3 backup automation
-            </div>
-            <div class="history-item">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                </svg>
-                Docker log rotation script
-            </div>
-        </div>
-        
-        <div class="sidebar-footer">
-            <div>Powered by ScriptAssist AI</div>
-        </div>
-    </div>
-
-    <!-- Main Content -->
-    <div class="main-content">
-        <div class="chat-container" id="chatContainer">
-            <!-- Welcome screen (shown initially) -->
-            <div class="welcome-container" id="welcomeScreen">
-                <h1 class="welcome-title">ScriptAssist</h1>
-                <p class="welcome-subtitle">Your AI assistant for Python and Bash scripting. Specialized in helping SREs and DevOps engineers create automation scripts.</p>
-                
-                <div class="examples-grid">
-                    <div class="example-card" onclick="sendExample('Create a Python script to monitor Kubernetes pod status and send alerts')">
-                        <h3>Kubernetes Monitoring</h3>
-                        <p>Generate a Python script to monitor Kubernetes pod status and send alerts when issues are detected</p>
-                    </div>
-                    <div class="example-card" onclick="sendExample('Write a Bash script to monitor system resources and send alerts when thresholds are exceeded')">
-                        <h3>System Resources Monitoring</h3>
-                        <p>Create a Bash script to monitor CPU, memory, and disk usage with configurable thresholds</p>
-                    </div>
-                    <div class="example-card" onclick="sendExample('Help me create a Python script for automated AWS EC2 instance backups')">
-                        <h3>AWS EC2 Backup</h3>
-                        <p>Build a Python script for creating and managing EC2 instance backups with retention policies</p>
-                    </div>
-                    <div class="example-card" onclick="sendExample('Generate a Bash script for database backup and rotation')">
-                        <h3>Database Backup</h3>
-                        <p>Create a script that handles database backups with compression and rotation of old backups</p>
+    </header>
+    
+    <div class="container">
+        <div class="chat-container" id="custom-ui">
+            <div class="chat-area">
+                <div class="messages" id="messages-container">
+                    <div class="message ai-message">
+                        Hello! How can I help you today?
                     </div>
                 </div>
-            </div>
-            
-            <!-- Messages container (initially hidden) -->
-            <div class="messages" id="messagesContainer" style="display:none;">
-                <!-- Messages will appear here -->
-            </div>
-        </div>
-        
-        <!-- Input area -->
-        <div class="input-container">
-            <div class="input-wrapper">
-                <textarea id="userInput" class="input-box" placeholder="Ask about Python or Bash scripts for SRE and DevOps automation..." rows="1"></textarea>
-                <button id="sendButton" class="send-button" onclick="sendMessage()">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="22" y1="2" x2="11" y2="13"></line>
-                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                    </svg>
-                </button>
+                <div class="input-area">
+                    <textarea id="user-input" placeholder="Type your message here..." rows="3"></textarea>
+                    <button class="send-button" id="send-button">Send</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Load the GenAI script - this loads in the background but we use our own UI -->
-    <script async src="https://rxnl6a3sqxrgj5u7z6u3bw2e.agents.do-ai.run/static/chatbot/widget.js" data-agent-id="422fa471-13c5-11f0-bf8f-4e013e2ddde4" data-chatbot-id="8S72tRVhzKo2aOgEIv-NdCKSI7PgHUtN" data-name="Scripter Chatbot" data-primary-color="#031B4E" data-secondary-color="#E5E8ED" data-button-background-color="#0061EB" data-starting-message="Hello! How can I help you today?" data-logo="/static/chatbot/icons/default-agent.svg"></script>
-
+    <!-- Load the original chatbot script -->
+    <script async src="https://rxnl6a3sqxrgj5u7z6u3bw2e.agents.do-ai.run/static/chatbot/widget.js" data-agent-id="422fa471-13c5-11f0-bf8f-4e013e2ddde4" data-chatbot-id="8S72tRVhzKo2aOgEIv-NdCKSI7PgHUtN" data-name="Scripter Chatbot" data-primary-color="`#031B4E`" data-secondary-color="`#E5E8ED`" data-button-background-color="`#0061EB`" data-starting-message="Hello! How can I help you today?" data-logo="/static/chatbot/icons/default-agent.svg"></script>
+    
     <script>
-        // Global variables
-        let agentLoaded = false;
-        let aiAgent = null;
-        let waitingForResponse = false;
-        let messageCount = 0;
-        
-        // Function to auto-resize textarea as user types
-        const textarea = document.getElementById('userInput');
-        textarea.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight) + 'px';
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait for the chatbot script to fully load
+            setTimeout(() => {
+                // Find the chatbot elements that get injected by the script
+                const chatbotWidget = document.querySelector('div[id^="do-ai-widget"]');
+                const chatbotButton = document.querySelector('button[id^="do-ai-widget"]');
+                
+                if (chatbotWidget) {
+                    // Hide the default chatbot UI
+                    chatbotWidget.style.display = 'none';
+                }
+                
+                if (chatbotButton) {
+                    // Hide the default chat button
+                    chatbotButton.style.display = 'none';
+                }
+                
+                // Initialize our custom UI
+                setupCustomChatInterface();
+            }, 2000); // Give some time for the chatbot script to load
         });
 
-        // Handle Enter key to send message
-        textarea.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
+        function setupCustomChatInterface() {
+            const sendButton = document.getElementById('send-button');
+            const userInput = document.getElementById('user-input');
+            const messagesContainer = document.getElementById('messages-container');
+            
+            // Get the chatbot's API functions
+            const chatbotApi = window.doAI && window.doAI.getChatbotApi();
+            
+            if (!chatbotApi) {
+                console.error('Chatbot API not found. Make sure the chatbot script is loaded correctly.');
+                return;
             }
-        });
-
-        // Start a new chat
-        function startNewChat() {
-            document.getElementById('welcomeScreen').style.display = 'none';
-            document.getElementById('messagesContainer').style.display = 'flex';
-            document.getElementById('messagesContainer').innerHTML = '';
             
-            // Add welcome message
-            addMessage(
-                "Hi! I'm your DevOps scripting assistant. I can help you create Python and Bash scripts for automation, monitoring, and other SRE/DevOps tasks. What would you like help with today?",
-                'assistant'
-            );
-            
-            // Focus on input box
-            document.getElementById('userInput').focus();
-        }
-
-        // Use an example prompt
-        function sendExample(exampleText) {
-            document.getElementById('welcomeScreen').style.display = 'none';
-            document.getElementById('messagesContainer').style.display = 'flex';
-            document.getElementById('messagesContainer').innerHTML = '';
-            
-            // Add the example as a user message
-            addMessage(exampleText, 'user');
-            
-            // Process the example
-            processUserMessage(exampleText);
-        }
-
-        // Send user message
-        function sendMessage() {
-            const userInput = document.getElementById('userInput');
-            const message = userInput.value.trim();
-            
-            if (message && !waitingForResponse) {
-                // Clear the input
+            // Function to send a message
+            function sendMessage() {
+                const message = userInput.value.trim();
+                if (!message) return;
+                
+                // Add user message to UI
+                addMessageToUI(message, 'user');
+                
+                // Clear input
                 userInput.value = '';
-                userInput.style.height = 'auto';
                 
-                // Hide welcome screen if visible
-                if (document.getElementById('welcomeScreen').style.display !== 'none') {
-                    document.getElementById('welcomeScreen').style.display = 'none';
-                    document.getElementById('messagesContainer').style.display = 'flex';
-                }
-                
-                // Add user message to the conversation
-                addMessage(message, 'user');
-                
-                // Process the message
-                processUserMessage(message);
-            }
-        }
-
-        // Add a message to the conversation
-        function addMessage(content, sender) {
-            const messagesContainer = document.getElementById('messagesContainer');
-            
-            // Create message elements
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${sender}`;
-            
-            const avatar = document.createElement('div');
-            avatar.className = `avatar ${sender}`;
-            avatar.textContent = sender === 'user' ? 'U' : 'S';
-            
-            const messageContent = document.createElement('div');
-            messageContent.className = 'message-content';
-            
-            // Handle markdown-like content if it's a string
-            if (typeof content === 'string') {
-                // Simple code block detection
-                const codeBlockRegex = /```([\s\S]*?)```/g;
-                let lastIndex = 0;
-                let match;
-                
-                while ((match = codeBlockRegex.exec(content)) !== null) {
-                    // Add text before code block
-                    if (match.index > lastIndex) {
-                        const textBefore = content.substring(lastIndex, match.index);
-                        const textNode = document.createElement('p');
-                        textNode.textContent = textBefore;
-                        messageContent.appendChild(textNode);
-                    }
-                    
-                    // Add code block
-                    const pre = document.createElement('pre');
-                    const code = document.createElement('code');
-                    code.textContent = match[1].trim();
-                    pre.appendChild(code);
-                    
-                    // Add copy button
-                    const copyButton = document.createElement('button');
-                    copyButton.className = 'copy-button';
-                    copyButton.innerHTML = `
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                        </svg>
-                        Copy
-                    `;
-                    copyButton.onclick = function() {
-                        navigator.clipboard.writeText(code.textContent);
-                        copyButton.textContent = 'Copied!';
-                        setTimeout(() => {
-                            copyButton.innerHTML = `
-                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                </svg>
-                                Copy
-                            `;
-                        }, 2000);
-                    };
-                    pre.appendChild(copyButton);
-                    
-                    messageContent.appendChild(pre);
-                    lastIndex = match.index + match[0].length;
-                }
-                
-                // Add remaining text after last code block
-                if (lastIndex < content.length) {
-                    const textAfter = content.substring(lastIndex);
-                    const textNode = document.createElement('p');
-                    textNode.textContent = textAfter;
-                    messageContent.appendChild(textNode);
-                }
-                
-                // If no code blocks were found, just add the content as is
-                if (lastIndex === 0) {
-                    messageContent.textContent = content;
-                }
-            } else {
-                // If content is not a string (shouldn't happen), convert to string
-                messageContent.textContent = String(content);
+                // Send to AI and get response
+                chatbotApi.sendMessage(message)
+                    .then(response => {
+                        // Add AI response to UI
+                        addMessageToUI(response.text, 'ai');
+                    })
+                    .catch(error => {
+                        console.error('Error sending message:', error);
+                        addMessageToUI('Sorry, there was an error processing your request.', 'ai');
+                    });
             }
             
-            // Assemble and append the message
-            messageDiv.appendChild(avatar);
-            messageDiv.appendChild(messageContent);
-            messagesContainer.appendChild(messageDiv);
-            
-            // Scroll to the bottom
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
-
-        // Process user message and get AI response
-        function processUserMessage(message) {
-            // Disable send button and indicate waiting
-            waitingForResponse = true;
-            const sendButton = document.getElementById('sendButton');
-            sendButton.disabled = true;
-            
-            // Add loading indicator
-            const loadingId = `loading-${Date.now()}`;
-            addMessage('Generating response...', 'assistant');
-            
-            // We're using a simulated AI interaction since we're embedding the external script
-            // For a real implementation, this would connect to the AI service
-            simulateAIResponse(message).then(aiResponse => {
-                // Remove loading message and add real response
-                const messagesContainer = document.getElementById('messagesContainer');
-                messagesContainer.lastChild.remove(); // Remove loading message
+            // Function to add message to UI
+            function addMessageToUI(text, sender) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender === 'user' ? 'user-message' : 'ai-message'}`;
+                messageDiv.textContent = text;
+                messagesContainer.appendChild(messageDiv);
                 
-                // Add the AI response
-                addMessage(aiResponse, 'assistant');
-                
-                // Re-enable send button
-                waitingForResponse = false;
-                sendButton.disabled = false;
+                // Scroll to bottom
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+            
+            // Event listeners
+            sendButton.addEventListener('click', sendMessage);
+            
+            userInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
             });
         }
-
-        // Simulate AI response - in a real implementation, this would connect to the AI service
-        function simulateAIResponse(message) {
-            return new Promise((resolve) => {
-                // Simulate network delay
-                setTimeout(() => {
-                    let response;
-                    
-                    // Example responses based on message content
-                    if (message.toLowerCase().includes('kubernetes') && message.toLowerCase().includes('monitor')) {
-                        response = `I'd be happy to help you create a Kubernetes monitoring script. Here's a Python script that monitors pod status and sends alerts:
-
-\`\`\`
-#!/usr/bin/env python3
-import kubernetes
-from kubernetes import client, config
-import time
-import smtplib
-import os
-from email.mime.text import MIMEText
-from datetime import datetime
-
-# Configuration
-NAMESPACE = "default"  # Set to None to monitor all namespaces
-SLEEP_INTERVAL = 300   # Check every 5 minutes
-EMAIL_SERVER = "smtp.example.com"
-EMAIL_PORT = 587
-EMAIL_USER = "alerts@example.com"
-EMAIL_PASSWORD = os.environ.get("EMAIL_PASSWORD")
-EMAIL_TO = ["oncall@example.com"]
-
-def send_alert(subject, body):
-    """Send email alert for issues found"""
-    try:
-        msg = MIMEText(body)
-        msg['Subject'] = subject
-        msg['From'] = EMAIL_USER
-        msg['To'] = ', '.join(EMAIL_TO)
-        
-        server = smtplib.SMTP(EMAIL_SERVER, EMAIL_PORT)
-        server.starttls()
-        server.login(EMAIL_USER, EMAIL_PASSWORD)
-        server.send_message(msg)
-        server.quit()
-        print(f"Alert sent: {subject}")
-    except Exception as e:
-        print(f"Failed to send alert: {e}")
-
-def check_pods():
-    """Check Kubernetes pods for issues"""
-    try:
-        # Load Kubernetes configuration
-        try:
-            config.load_incluster_config()  # If running inside cluster
-        except kubernetes.config.ConfigException:
-            config.load_kube_config()  # If running outside cluster
-        
-        v1 = client.CoreV1Api()
-        
-        # Get pods in namespace or all namespaces
-        if NAMESPACE:
-            pods = v1.list_namespaced_pod(NAMESPACE)
-        else:
-            pods = v1.list_pod_for_all_namespaces()
-        
-        issues = []
-        for pod in pods.items:
-            pod_name = pod.metadata.name
-            namespace = pod.metadata.namespace
-            status = pod.status.phase
-            
-            # Check pod status
-            if status != "Running" and status != "Succeeded":
-                issues.append(f"Pod {pod_name} in namespace {namespace} has status: {status}")
-            
-            # Check container statuses
-            if pod.status.container_statuses:
-                for container in pod.status.container_statuses:
-                    if not container.ready and status == "Running":
-                        restart_count = container.restart_count
-                        
-                        # Get reason for container not being ready
-                        reason = "Unknown"
-                        if container.state.waiting:
-                            reason = container.state.waiting.reason
-                        elif container.state.terminated:
-                            reason = container.state.terminated.reason
-                        
-                        issues.append(f"Container {container.name} in pod {pod_name} (namespace {namespace}) is not ready. Reason: {reason}, Restarts: {restart_count}")
-        
-        # Send alert if issues were found
-        if issues:
-            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            subject = f"Kubernetes Alert: {len(issues)} issues detected"
-            body = f"Kubernetes Pod Issues Detected at {timestamp}\\n\\n"
-            body += "\\n".join(issues)
-            body += "\\n\\nPlease investigate these issues."
-            send_alert(subject, body)
-            print(f"{timestamp} - {len(issues)} issues found")
-        else:
-            print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - All pods are healthy")
-            
-    except Exception as e:
-        print(f"Error checking pods: {e}")
-        send_alert("Kubernetes Monitoring Script Error", f"The pod monitoring script encountered an error: {e}")
-
-def main():
-    print(f"Starting Kubernetes pod monitoring (checking every {SLEEP_INTERVAL} seconds)")
-    while True:
-        try:
-            check_pods()
-            time.sleep(SLEEP_INTERVAL)
-        except KeyboardInterrupt:
-            print("Monitoring stopped by user.")
-            break
-
-if __name__ == "__main__":
-    main()
-\`\`\`
-
-This script:
-1. Connects to your Kubernetes cluster (works both in-cluster and externally)
-2. Checks all pods in a specified namespace (or all namespaces)
-3. Detects pods not in "Running" state and containers that aren't ready
-4. Sends email alerts when issues are found
-5. Runs continuously with configurable check intervals
-
-To use it:
-- Install dependencies: `pip install kubernetes`
-- Set the EMAIL_PASSWORD environment variable
-- Configure the email settings and namespace at the top
-- Run the script on a server or within your cluster as a cronjob
-
-Would you like me to explain any part of this script in more detail?`;
-                    } 
-                    else if (message.toLowerCase().includes('system') && (message.toLowerCase().includes('monitor') || message.toLowerCase().includes('resources'))) {
-                        response = `Here's a Bash script to monitor system resources (CPU, memory, disk) and send alerts when thresholds are exceeded:
-
-\`\`\`
-#!/bin/bash
-# System Resource Monitoring Script
-# Monitors CPU, memory, and disk usage and sends alerts when thresholds are exceeded
-
-# Configuration
-CPU_THRESHOLD=80       # CPU usage percentage threshold
-MEMORY_THRESHOLD=80    # Memory usage percentage threshold
-DISK_THRESHOLD=80      # Disk usage percentage threshold
-CHECK_INTERVAL=300     # Check every 5 minutes (300 seconds)
-
-# Alert configuration
-ALERT_EMAIL="admin@example.com"
-SLACK_WEBHOOK_URL=""   # Optional: Add your Slack webhook URL here
-
-# Log file
-LOG_FILE="/var/log/system_monitor.log"
-HOSTNAME=$(hostname)
-
-# Function to send email alert
-send_email_alert() {
-    local subject="$1"
-    local message="$2"
-    
-    echo "$message" | mail -s "$subject" "$ALERT_EMAIL"
-}
-
-# Function to send Slack alert
-send_slack_alert() {
-    local title="$1"
-    local message="$2"
-    
-    if [ -n "$SLACK_WEBHOOK_URL" ]; then
-        curl -s -X POST -H 'Content-type: application/json' \
-        --data "{
-            \"text\": \"*$title*\",
-            \"blocks\": [
+    </script>
+</body>
+</html>
