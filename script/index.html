@@ -211,7 +211,7 @@
             const userInput = document.getElementById('user-input');
             const messagesContainer = document.getElementById('messages-container');
             const loadingIndicator = document.getElementById('loading-indicator');
-            
+            let conversationId = null;
             // Sample responses for demo
             const sampleResponses = [
                 "I'm here to help! What specific information are you looking for?",
@@ -224,42 +224,38 @@
                 "I'm processing your request. From what I understand, you're asking about..."
             ];
             
-            // Function to simulate AI response
-            function simulateResponse(message) {
-                return new Promise((resolve) => {
-                    // Simulate thinking time (1-3 seconds)
-                    const thinkingTime = 1000 + Math.random() * 2000;
-                    
-                    setTimeout(() => {
-                        // Generate a response based on user input
-                        let response;
-                        
-                        // Custom responses based on specific inputs
-                        if (message.toLowerCase().includes('hello') || message.toLowerCase().includes('hi')) {
-                            response = "Hello! It's nice to meet you. How can I assist you today?";
-                        } 
-                        else if (message.toLowerCase().includes('help')) {
-                            response = "I'm here to help! Please let me know what you need assistance with, and I'll do my best to provide relevant information.";
-                        }
-                        else if (message.toLowerCase().includes('thank')) {
-                            response = "You're welcome! If you have any other questions, feel free to ask.";
-                        }
-                        else if (message.toLowerCase().includes('how are you')) {
-                            response = "I'm functioning well, thank you for asking! How can I assist you today?";
-                        }
-                        else if (message.length < 5) {
-                            response = "I notice your message is quite short. Could you provide more details so I can better assist you?";
-                        }
-                        else {
-                            // Pick a random response from the sample list
-                            const randomIndex = Math.floor(Math.random() * sampleResponses.length);
-                            response = sampleResponses[randomIndex] + " Regarding your message about \"" + message.substring(0, 30) + (message.length > 30 ? "..." : "") + "\", I would suggest exploring this topic further.";
-                        }
-                        
-                        resolve(response);
-                    }, thinkingTime);
-                });
-            }
+            // Function to get AI response from your backend
+async function simulateResponse(message) {
+    try {
+        // Create or get conversation ID (stored in a variable at the top of your script)
+        if (!conversationId) {
+            const initResponse = await fetch('https://rxnl6a3sqxrgj5u7z6u3bw2e.agents.do-ai.run/api/conversations', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    agent_id: "422fa471-13c5-11f0-bf8f-4e013e2ddde4",
+                    chatbot_id: "8S72tRVhzKo2aOgEIv-NdCKSI7PgHUtN" 
+                })
+            });
+            
+            const initData = await initResponse.json();
+            conversationId = initData.conversation_id;
+        }
+        
+        // Send message to existing conversation
+        const messageResponse = await fetch(`https://rxnl6a3sqxrgj5u7z6u3bw2e.agents.do-ai.run/api/conversations/${conversationId}/messages`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content: message })
+        });
+        
+        const messageData = await messageResponse.json();
+        return messageData.response.content;
+    } catch (error) {
+        console.error('API Error:', error);
+        return 'Sorry, there was an error connecting to the AI service.';
+    }
+}
             
             // Simulate typing animation
             function simulateTyping(text, element) {
