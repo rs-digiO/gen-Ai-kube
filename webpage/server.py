@@ -10,8 +10,8 @@ dotenv.load_dotenv()
 
 st.set_page_config(page_title="AI Research Assistant", layout="centered")
 
-st.title("🤖 Dwayne AI Research Assistant")
-st.markdown("Ask me anything about Transformers, Attention Mechanisms, or recent ML papers!")
+st.title("🤖 Kube Assistant")
+st.markdown("Your one-stop destination for Kubernetes knowledge, tips, and best practices!")
 
 # Session state
 if "messages" not in st.session_state:
